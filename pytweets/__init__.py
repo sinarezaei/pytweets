@@ -202,15 +202,12 @@ class TwitterApp:
             response_json = response.json()
             self.token_type = response_json['token_type']
             self.access_token = response_json['access_token']
-            print('token_type: ' + str(self.token_type))
-            print('access_token: ' + str(self.access_token))
             return True
         except Exception as ex:
             raise Exception('Cannot connect to twitter api' + str(ex))
 
     def invalidate_access_token(self) -> bool:
         if not self.__is_authenticated():
-            print('Not authenticated')
             return False
         url = 'https://api.twitter.com/oauth2/invalidate_token'
         basic_token = self.__get_basic_token()
@@ -246,7 +243,6 @@ class TwitterApp:
             response = requests.get(url=url, headers=headers, timeout=60, proxies=self.proxies)
             if response.status_code != 200:
                 raise Exception('Cannot authenticate (Erro ' + str(response.status_code) + ', ' + str(response.text) + ')')
-            # print(response.text)
             response_json = response.json()
             statuses = response_json['statuses']
             return self.pykson.from_json(data=statuses, cls=TweetObject, accept_unknown=True)
@@ -268,12 +264,10 @@ class TwitterApp:
             }
             if max_results:
                 data['maxResults'] = max_results
-            print(data)
             response = requests.post(url=url, headers=headers, json=data, timeout=60, proxies=self.proxies)
             if response.status_code != 200:
                 raise Exception('Cannot authenticate (Error ' + str(response.status_code) + ', ' + str(response.text) + ')')
             response_json = response.json()
-            # print(response_json)
             results = response_json['results']
             next_key = response_json.get('next', None)
             return next_key, self.pykson.from_json(data=results, cls=TweetObject, accept_unknown=True)
@@ -292,7 +286,6 @@ class TwitterApp:
         try:
             response = requests.get(url=url, headers=headers, timeout=60, proxies=self.proxies)
             response_json = response.json()
-            print(response_json)
             return self.pykson.from_json(data=response_json, cls=UserInfoResponse, accept_unknown=True)
         except Exception as ex:
             raise Exception('Cannot connect to twitter api: ' + str(ex))
@@ -312,12 +305,10 @@ class TwitterApp:
                 req_url = url
                 if max_id is not None:
                     req_url = req_url + '&max_id=' + str(max_id)
-                print('sending request, current count: ' + str(len(responses)))
                 response = requests.get(url=req_url, headers=headers, timeout=60, proxies=self.proxies)
                 if response.status_code != 200:
                     raise Exception('Cannot authenticate (Error ' + str(response.status_code) + ', ' + str(response.text) + ')')
                 response_json = response.json()
-                # print(response_json)
                 results = response_json
                 res = self.pykson.from_json(data=results, cls=TweetObject, accept_unknown=True)
                 if len(res) > 0 and len(responses) > 0:
@@ -327,8 +318,7 @@ class TwitterApp:
                     return responses
                 elif len(res) > 0:
                     max_id = res[-1].tweet_id
-                    # print('max id ' + str(max_id))
                 else:
-                    raise Exception('What happeend? ' + str(res))
+                    raise Exception('Impossible Exception? ' + str(res))
         except Exception as ex:
             raise Exception('Cannot connect to twitter api: ' + str(ex))
